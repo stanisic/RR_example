@@ -192,7 +192,7 @@ done
 #+begin_src sh
 # Doing real experiments, not just testing if the code is valid and can be executed
 if [[ $testing == 0 ]]; then
-    branch=$(git symbolic-ref HEAD)
+    branch=$(eval basename $(git symbolic-ref HEAD))
     echo "Now you are in git branch: ${branch}"
 # Checking the name of the branch is not master
     if [[ "$branch" == *master* ]]; then
@@ -209,12 +209,21 @@ if [[ $testing == 0 ]]; then
 	exit 1
     fi
 fi
+#+end_src
+
+      For real experiments (not tests), data folder will take the name
+      from the branch. This can be configured differently, but such a
+      way is the easiest and completely automatic.
+
+#+begin_src sh
 # Name of data folder where to store results if testing
 if [[ $testing == 1 ]]; then
     dataname="Test"
     datafolder="$basename/data/testing"
-    mkdir -p $basename/data/testing
+else 
+    datafolder="$basename/data/$branch"
 fi
+mkdir -p $datafolder
 #+end_src
 
       Giving original name with appended with a unique number to the
