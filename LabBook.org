@@ -1,0 +1,527 @@
+#+TITLE:       Laboratory notebook (LabBook) of an example project for doing QuickSort
+#+AUTHOR:      Luka Stanisic
+#+LANGUAGE:    en
+#+TAGS: IMPORTANT(i) TEST(t)
+#+TAGS: _LUKA(l) _ARNAUD(a) 
+#+TAGS: @WINNETOU(W) @PAWNEE(P)
+
+* Documentation
+** Introduction
+ A paramount asset of the methodology is the laboratory notebook
+ (labbook), similar to the ones biologist, chemists and scientist from
+ other fields use on a daily basis to document the progress of their
+ work. This notebook is a single file inside the project repository,
+ shared between all collaborators. The main motivation for keeping a
+ labbook is that anyone, from original researchers to external
+ reviewers, can later use it to understand all the steps of the study
+ and potentially reproduce and improve it. This self-contained unique
+ file has two main parts. The first one aims at carefully documenting
+ the development and use of the researchers' complex source code. The
+ second one is concerned with keeping the experimentation journal.
+
+*** Explanation of "Documentation" part
+      This part serves as a starting point for newcomers, but also as
+      a good reminder for everyday users. The labbook explains the
+      general ideas behind the whole project and methodology, i.e.,
+      what the workflow for doing experiments is and how the code and
+      data are organized in folders. It also states the conventions on
+      how the labbook itself should be used. Details about the
+      different programs and scripts, along with their purpose
+      follow. These information concern the source code used in the
+      experiments as well as the tools for manipulating data and the
+      analysis code used for producing plots and
+      reports. Additionally, there are a few explanations on the
+      revision control usage and conventions. Moreover, this part of
+      the labbook contains a few examples how to run scripts,
+      illustrating the most common arguments and format. Although such
+      information might seem redundant with the previous documentation
+      part, in practice such examples are indispensable even for
+      experienced users, since some scripts have lots of environment
+      variables, arguments and options. It is also important to keep
+      track of major changes to the source code and the project in
+      general inside a ChangeLog. Since all modifications are already
+      captured and commented in Git commits, the log section offers a
+      much more coarse-grain view of the code development
+      history. There is also a list with a brief description of every
+      Git tag in the repository as it helps finding the latest stable
+      or any other specific version of the code.
+
+*** Explanation of "Experiment results" part
+      All experiments should be carefully noted in this part, together
+      with the key input parameters, the motivation for running such
+      experiment and the remarks on the results. For each experimental
+      campaign there should be a new entry that answers to the
+      questions "why", "when", "where" and "how" experiments were run
+      and finally what the observations on the results are. Inside the
+      descriptive conclusions, Org-mode allows for using both links
+      and git-links connecting the text to specific revisions of
+      files. These hyperlinks point to crucial data and analysis
+      reports that illustrate a newly discovered phenomenon.
+
+** Additional literature and useful links
+   This simple example project was hugely inspired by Arnaud Legrand's
+   Master course on performance evaluation and experimental
+   methodology. The motivation and explanation of the methodology used
+   for this project is explained in more details in [[https://hal.inria.fr/hal-01112795][this journal paper]]
+   and PhD [[http://mescal.imag.fr/membres/luka.stanisic/thesis/thesis.pdf][thesis]] of [[http://mescal.imag.fr/membres/luka.stanisic/][Luka Stanisic]]. To see how this methodology helped
+   performing a much larger study concearning modeling and simulation
+   of HPC applications running on top of dynamic task-based runtimes,
+   go to the following [[http://starpu-simgrid.gforge.inria.fr/][webpage]].
+   
+** Experimental workflow
+   1) Create a new branch for doing experiments
+   2) Make sure everything is commited
+   3) Run /run_xp/ script with the desired parameters
+   4) Add obtained new experiments results to the git
+   5) Do the analysis
+   6) Add to the labbook (this file) inside "* Experiment results" a new section describing conditions in which experiment was performed and the major notes about the results
+   7) Commit/push all files in the experimental branch
+   8) Merge this new branch with the remote "data" branch
+
+** TODO Code and its organization
+*** scripts:
+    Scripts for running the experiments and collecting the data are
+    written directly in this file. Later they should be extracted from
+    it using Org-mode's tangling mechanism. If you are not so common
+    with Org-mode, do not hesitate to write this scripts in regular
+    bash (or python) files separately from laboratory notebook. In
+    such case ignore the next first subsection and all Org-babel
+    related things in the following section-inspect just the shell
+    code inside the blocks.
+
+**** Configuring Emacs for Org-mode tangling (if you have chosen the true path)
+    For writing, tangling the current file and making all scripts
+    executable an easy process, I added the following shortcuts to my
+    Emacs configuration.
+
+#+begin_src emacs-lisp :eval never
+  (global-set-key (kbd "C-c m") (lambda () (interactive) (org-babel-tangle-file buffer-file-name) (shell-command  "chmod +x *.sh") ))
+#+end_src
+
+     Also section properties are used to define in which files the
+     code will be tangled.
+
+**** run_xp.sh
+ :PROPERTIES:
+ :header-args:    :tangle run_xp.sh
+ :END:
+
+     - Written in Org-mode and later tangled in a shell script.
+     - Used for running the experiment in the right conditions, also calling the get_info script.
+     - It will also verify that the source code is commited and that you are in the right branch, before running the experiments.
+       
+***** Initial variables, help and their parsing.
+      Bash preamble.
+
+#+begin_src sh
+#!/bin/bash
+# Script for running parallel quicksort comparison
+
+set -e # fail fast
+#+end_src
+
+      Defining all variables that will be used in the script.
+
+#+begin_src sh
+# Script parameters
+basename="$PWD"
+host="$(hostname | sed 's/[0-9]*//g' | cut -d'.' -f1)"
+datafolder=""
+dataname="QuickSortData"
+srcfolder="$basename/src"
+
+# DoE parameters
+
+# Reading command line arguments
+
+# Choosing which program to run (in case this script is a wrapper for multiple programs)
+programname="./src/parallelQuicksort"
+
+# Program options
+testing=0
+recompile=0
+verbose=0
+#+end_src
+
+     Writing the help output, to help users invoke the script.
+
+#+begin_src sh
+help_script()
+{
+    cat << EOF
+Usage: $0 options
+
+Script for running StarPU with benchmarking
+
+OPTIONS:
+   -h      Show this message
+   -t      Enable testing
+   -c      Recompile source code
+   -v      Verbose output in the terminal
+EOF
+}
+# Parsing options
+while getopts "tcvh" opt; do
+    case $opt in
+	t)
+	    testing=1
+	    ;;
+	c)
+	    recompile=1
+	    ;;
+	v)
+	    verbose=1
+	    ;;
+	h)
+	    help_script
+	    exit 4
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG"
+	    help_script
+	    exit 3
+	    ;;
+    esac
+done
+#+end_src
+
+***** Verification
+      Verifying that everything is commited (if this is not a simple
+      test), that we are in the right branch.
+
+#+begin_src sh
+# Doing real experiments, not just testing if the code is valid and can be executed
+if [[ $testing == 0 ]]; then
+    branch=$(git symbolic-ref HEAD)
+    echo "Now you are in git branch: ${branch}"
+# Checking the name of the branch is not master
+    if [[ "$branch" == *master* ]]; then
+	echo "ERROR-experiments can be done only in specific xp branch!"
+	echo "Use -t option for testing"
+	exit 2
+    fi
+# Checking if everything is commited
+    if git diff-index --quiet HEAD --; then
+	echo "Everything is commited"
+    else
+	echo "ERROR-need to commit before doing experiment!"
+	git status
+	exit 1
+    fi
+fi
+# Name of data folder where to store results if testing
+if [[ $testing == 1 ]]; then
+    dataname="Test"
+    datafolder="$basename/data/testing"
+    mkdir -p $basename/data/testing
+fi
+#+end_src
+
+      Giving original name with appended with a unique number to the
+      output file.
+
+#+begin_src sh
+# Producing the original name for output file
+bkup=0
+while [ -e $datafolder/$dataname${bkup}.org ] || [ -e $datafolder/$dataname${bkup}.org~ ]; do 
+    bkup=`expr $bkup + 1`
+done
+outputfile="$datafolder/$dataname${bkup}.org"
+#+end_src
+
+***** Capturing metadata and compiling
+      Calling an external script to capture metadata.
+
+#+begin_src sh
+# Starting to write output file and capturing all metadata
+title="Experiment on $(eval hostname) machine for parallel QuickSort"
+./get_info.sh -t "$title" $outputfile
+#+end_src
+
+      Compiling the source code and capturing the compilation output.
+
+#+begin_src sh
+# Compilation
+echo "* COMPILATION" >> $outputfile
+if [[ $recompile == 1 ]]; then
+    echo "Cleaning the previously compiled code..."
+    make clean -C $srcfolder > /dev/null # Decided not to capture the output of clean
+
+    # Here for some more complex the configuration is needed
+    # The options and the output of the ./configure should also be captured
+
+    echo "** COMPILATION OUTPUT" >> $outputfile
+    echo "Compiling..."
+    make -C $srcfolder >> $outputfile
+    # make install (when needed)
+
+    echo "** SHARED LIBRARIES DEPENDENCIES" >> $outputfile
+    ldd $programname >> $outputfile
+else
+    echo "# used previous compile" >> $outputfile    
+fi
+#+end_src
+
+***** Running the experiment
+      Preparing and capturing the line with which the experiment will
+      be executed.
+
+#+begin_src sh
+  # Prepare running options
+  running="$programname"
+
+  echo "* COMMAND LINE USED FOR RUNNING EXPERIMENT" >> $outputfile
+  echo $running >> $outputfile
+#+end_src
+
+      Run program.
+
+#+begin_src sh
+  echo "Executing program..."
+  # Writing results
+  rm -f stdout.out
+  rm -f stderr.out
+  time1=$(date +%s.%N)
+  set +e # In order to detect and print execution errors
+
+  # In fact only the following line is actually executing the experiment
+  # everything else is a wrapper, but it is very important that it is captured
+  #############################################
+  eval $running 1> stdout.out 2> stderr.out
+  #############################################
+
+  set -e
+  time2=$(date +%s.%N)
+  echo "* ELAPSED TIME FOR RUNNING THE PROGRAM" >> $outputfile
+  echo "Elapsed:    $(echo "$time2 - $time1"|bc ) seconds" >> $outputfile
+  echo "* STDERR OUTPUT" >> $outputfile
+  cat stderr.out >> $outputfile
+  if [ ! -s stdout.out ]; then
+      echo "ERROR DURING THE EXECUTION!!!" >> stdout.out
+  fi
+  echo "* STDOUT OUTPUT" >> $outputfile
+  cat stdout.out >> $outputfile
+  if [[ $verbose == 1 ]]; then
+      cat stderr.out
+      cat stdout.out
+  fi
+#+end_src
+
+    Cleanup.
+
+#+begin_src sh
+  # Cleanup & End
+  rm -f stdout.out
+  rm -f stderr.out
+  cd $basename
+#+end_src
+
+
+**** get_info.sh
+ :PROPERTIES:
+ :header-args:    :tangle get_info.sh
+ :END:
+
+
+     - Written in Org-mode and later tangled in a shell script.
+     - Capturing all the necessary metadata.
+     - Enlarge it (or change it) according to your specific needs. 
+     
+***** Initial variables, help and their parsing.
+      Bash preamble.
+
+#+begin_src sh
+#!/bin/bash
+# Script to get machine information before doing the experiment
+
+set +e # Don't fail fast since some information is maybe not available
+#+end_src
+
+      Defining all variables that will be used in the script.
+
+#+begin_src sh
+# Script parameters
+title="Experiment results"
+host="$(hostname | sed 's/[0-9]*//g' | cut -d'.' -f1)"
+#+end_src
+
+     Writing the help output, to help users invoke the script.
+
+#+begin_src sh
+help_script()
+{
+    cat << EOF
+Usage: $0 [options] outputfile.org
+
+Script for to get machine information before doing the experiment
+
+OPTIONS:
+   -h      Show this message
+   -t      Title of the output file
+EOF
+}
+# Parsing options
+while getopts "t:h" opt; do
+    case $opt in
+	t)
+	    title="$OPTARG"
+	    ;;
+	h)
+	    help_script
+	    exit 4
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG"
+	    help_script
+	    exit 3
+	    ;;
+    esac
+done
+#+end_src
+    
+    Getting output file name from the command line argument.
+
+#+begin_src sh
+shift $((OPTIND - 1))
+outputfile=$1
+if [[ $# != 1 ]]; then
+    echo 'ERROR!'
+    help_script
+    exit 2
+fi
+#+end_src
+
+***** Collecting metadata
+      Preambule of the output file.
+
+#+begin_src sh
+echo "#+TITLE: $title" >> $outputfile
+echo "#+DATE: $(eval date)" >> $outputfile
+echo "#+AUTHOR: $(eval whoami)" >> $outputfile
+echo "#+MACHINE: $(eval hostname)" >> $outputfile
+echo "#+ORIGINAL FILE NAME: $(eval basename $outputfile)" >> $outputfile
+echo " " >> $outputfile 
+#+end_src
+
+      Collecting metadata.
+
+#+begin_src sh
+echo "* MACHINE INFO" >> $outputfile
+
+echo "** PEOPLE LOGGED WHEN EXPERIMENT STARTED" >> $outputfile
+who >> $outputfile
+
+echo "** ENVIRONMENT VARIABLES" >> $outputfile
+env >> $outputfile
+
+echo "** HOSTNAME" >> $outputfile
+hostname >> $outputfile
+
+if [[ -n $(command -v lstopo) ]];
+then
+    echo "** MEMORY HIERARCHY" >> $outputfile
+    lstopo --of console >> $outputfile    
+fi
+
+if [ -f /proc/cpuinfo ];
+then
+    echo "** CPU INFO" >> $outputfile
+    cat /proc/cpuinfo >> $outputfile    
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ];
+then
+    echo "** CPU GOVERNOR" >> $outputfile
+    cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $outputfile    
+fi
+
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ];
+then
+    echo "** CPU FREQUENCY" >> $outputfile
+    cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $outputfile    
+fi
+
+
+if [[ -n $(command -v nvidia-smi) ]];
+then
+    echo "** GPU INFO FROM NVIDIA-SMI" >> $outputfile
+    nvidia-smi -q >> $outputfile    
+fi 
+
+if [ -f /proc/version ];
+then
+    echo "** LINUX AND GCC VERSIONS" >> $outputfile
+    cat /proc/version >> $outputfile    
+fi
+
+if [[ -n $(command -v module) ]];
+then
+    echo "** MODULES" >> $outputfile
+    module list 2>> $outputfile    
+fi
+#+end_src
+
+      Collecting revisions info.
+
+#+begin_src sh
+echo "* CODE REVISIONS" >> $outputfile
+
+git_exists=`git rev-parse --is-inside-work-tree`
+if [ "${git_exists}" ]
+then
+    echo "** GIT REVISION OF REPOSITORY" >> $outputfile
+    git log -1 >> $outputfile    
+fi
+
+svn_exists=`svn info . 2> /dev/null`
+if [ -n "${svn_exists}" ]
+then
+   echo "** SVN REVISION OF REPOSITORY" >> $outputfile
+   svn info >> $outputfile   
+fi
+#+end_src
+
+*** src/
+**** parallelQuicksort.c
+     - A filed copied from Arnaud Legrand, which he used for his
+       [[https://github.com/alegrand/M2R-ParallelQuicksort][performance evaluation classes]] for Master 2 students.
+     - This code quicksorts a random list of size given by the
+       argument (default 1M) and times both sequential quicksort and
+       parallel (using Pthreads).
+**** Makefile
+     - Typical Makefile (also taken from Arnaud Legrand) which compiles C code
+*** analysis/
+
+** Organization of Git
+*** remote/origin/master branch contains
+    - All the source code, scripts for running experiments, analysis code and this labbook with only "Documentation" part
+*** remote/origin/xp# branches contains
+    - Everything that is already in /master/ branch
+    - All the data related to specific experimental campaign
+    - Also some important (not all) analysis .pdf report files
+*** remote/origin/data branch contains
+    - Everything that is already in /master/ branch
+    - All the data gathered from previous experimental campaigns and some analysis which compares different experimental sets of results
+
+** TODO Examples for running scripts
+   - For running experiments execute
+
+#+BEGIN_SRC 
+
+#+END_SRC
+** ChangeLog
+   - Contains important coarse-grain information about the changes on the project.
+   - This section may be redundant if:
+     + The project is relatively small and changes are captured well enough as Git commits
+     + Researchers keep the information about the progress in their private journals, which they use on a daily basis for all their projects
+   - However, if the project is large and involves multiple collaborators, it is better to use this ChangeLog for noting all major changes
+
+*** 2015-11-09
+    - Started writing this small example project
+** TODO Git TAGs
+
+   The list of Git-tags can be copied by hand or even better using Org-babel
+#+begin_src sh :results output :exports both
+ git tag -n1
+#+end_src
+* Experiment results /
