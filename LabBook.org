@@ -127,7 +127,7 @@ set -e # fail fast
 basename="$PWD"
 host="$(hostname | sed 's/[0-9]*//g' | cut -d'.' -f1)"
 datafolder=""
-dataname="QuickSortData"
+dataname="QuicksortData"
 srcfolder="$basename/src"
 
 # DoE parameters
@@ -185,6 +185,19 @@ while getopts "tcvh" opt; do
 done
 #+end_src
 
+    Getting input parameter (number of elements to sort) from the
+    command line argument.
+
+#+begin_src sh
+shift $((OPTIND - 1))
+NUM=$1
+if [[ $# > 1 ]]; then
+    echo 'ERROR-more than one input parameter'
+    help_script
+    exit 2
+fi
+#+end_src
+
 ***** Verification
       Verifying that everything is commited (if this is not a simple
       test), that we are in the right branch.
@@ -192,7 +205,7 @@ done
 #+begin_src sh
 # Doing real experiments, not just testing if the code is valid and can be executed
 if [[ $testing == 0 ]]; then
-    branch=$(git symbolic-ref HEAD)
+    branch=$(eval basename $(git symbolic-ref HEAD))
     echo "Now you are in git branch: ${branch}"
 # Checking the name of the branch is not master
     if [[ "$branch" == *master* ]]; then
@@ -209,12 +222,21 @@ if [[ $testing == 0 ]]; then
 	exit 1
     fi
 fi
+#+end_src
+
+      For real experiments (not tests), data folder will take the name
+      from the branch. This can be configured differently, but such a
+      way is the easiest and completely automatic.
+
+#+begin_src sh
 # Name of data folder where to store results if testing
 if [[ $testing == 1 ]]; then
     dataname="Test"
     datafolder="$basename/data/testing"
-    mkdir -p $basename/data/testing
+else 
+    datafolder="$basename/data/$branch"
 fi
+mkdir -p $datafolder
 #+end_src
 
       Giving original name with appended with a unique number to the
@@ -234,7 +256,7 @@ outputfile="$datafolder/$dataname${bkup}.org"
 
 #+begin_src sh
 # Starting to write output file and capturing all metadata
-title="Experiment on $(eval hostname) machine for parallel QuickSort"
+title="Experiment for parallel quicksort of $NUM elements"
 ./get_info.sh -t "$title" $outputfile
 #+end_src
 
@@ -268,7 +290,7 @@ fi
 
 #+begin_src sh
   # Prepare running options
-  running="$programname"
+  running="$programname $NUM"
 
   echo "* COMMAND LINE USED FOR RUNNING EXPERIMENT" >> $outputfile
   echo $running >> $outputfile
@@ -398,7 +420,7 @@ echo "#+TITLE: $title" >> $outputfile
 echo "#+DATE: $(eval date)" >> $outputfile
 echo "#+AUTHOR: $(eval whoami)" >> $outputfile
 echo "#+MACHINE: $(eval hostname)" >> $outputfile
-echo "#+ORIGINAL FILE NAME: $(eval basename $outputfile)" >> $outputfile
+echo "#+FILENAME: $(eval basename $outputfile)" >> $outputfile
 echo " " >> $outputfile 
 #+end_src
 
@@ -592,11 +614,27 @@ echo "MERGING IS DONE SUCCESSFULLY!"
 
 *** src/
 **** parallelQuicksort.c
-     - A filed copied from Arnaud Legrand, which he used for his
-       [[https://github.com/alegrand/M2R-ParallelQuicksort][performance evaluation classes]] for Master 2 students.
-     - This code quicksorts a random list of size given by the
-       argument (default 1M) and times both sequential quicksort and
-       parallel (using Pthreads).
+     I copied the code from Arnaud Legrand, which he used for his
+     [[https://github.com/alegrand/M2R-ParallelQuicksort][performance evaluation classes]] for Master 2 students.
+
+     The code is quite simple at the moment and can be run in the
+     following way.
+
+#+BEGIN_SRC c :eval never
+./src/parallelQuicksort [1000000]
+#+END_SRC
+
+
+     When run, the code executes initializes an array of the size
+     given in argument (1000000 by default) with random integer values
+     and sorts it using:
+
+      1) a custom sequential implementation;
+      2) a custom parallel implementation;
+      3) the libc qsort function.
+
+      Times are reported in seconds.
+
 **** Makefile
      - Typical Makefile (also taken from Arnaud Legrand) which compiles C code
 *** analysis/
@@ -612,12 +650,21 @@ echo "MERGING IS DONE SUCCESSFULLY!"
     - Everything that is already in /master/ branch
     - All the data gathered from previous experimental campaigns and some analysis which compares different experimental sets of results
 
-** TODO Examples for running scripts
-   - For running experiments execute
+** Examples for running scripts
+   For running test experiments, just to validate that the script is
+   working as planned (without caring about the actual experimental
+   results).
 
-#+BEGIN_SRC 
+#+begin_src sh :results output
+./run_xp.sh -t -c -v
+#+end_src
 
-#+END_SRC
+   For executing real experiment, with an input parameter 2000000.
+
+#+begin_src sh :results output
+./run_xp.sh -c -v 2000000
+#+end_src
+
 ** ChangeLog
    - Contains important coarse-grain information about the changes on the project.
    - This section may be redundant if:

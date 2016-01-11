@@ -1,0 +1,54 @@
+#+TITLE: Simple analysis comparing performance of different implementations of quicksort algorithm
+#+AUTHOR: Luka Stanisic
+
+* Introduction
+  For the analysis of the experiment results, we rely on Org-mode
+  and R. In order to execute it, you will need recent Emacs (>24.3),
+  recent Org-mode (>8.0), R and few R packages (ggplot2 and reshape2). 
+  
+* Extracting the data
+  First we need to extract results of the experiments from Org-mode
+  data files into a new file .csv that can easily be read by R. Bare
+  in mind that this part is very connected to the current format of
+  the data files.
+
+#+name: Extract
+#+header: :var inputfile="../data/testing/Test0.org" outputfile="tmp_results"
+#+BEGIN_SRC sh :results silent
+num="$(grep -e "+TITLE: " $inputfile | cut -d " " -f7)"
+seq="$(grep -e "Sequential quicksort took: " $inputfile | cut -d " " -f4)"
+par="$(grep -e "Parallel quicksort took: " $inputfile | cut -d " " -f4)"
+built="$(grep -e "Built-in quicksort took: " $inputfile | cut -d " " -f4)"
+
+echo "$num, $seq, $par, $built" >> $outputfile
+#+END_SRC
+
+#+call: Extract(inputfile="../data/testing/Test0.org", outputfile="tmp_results") :results silent
+#+call: Extract(inputfile="../data/testing/Test1.org", outputfile="tmp_results") :results silent
+
+* Basic comparison
+
+#+begin_src R :results graphics :session *R* :dir . :exports both :file comparison.png :width 700 :height 400
+# Reading the data
+df <- read.csv("tmp_results", header=FALSE)
+names(df) <- c("Size", "Sequential", "Parallel", "Built-in (libc)")
+
+# Reshaping the data into the right format
+library(reshape2)
+df <- melt(df, id.vars = c("Size"), 
+        variable.name = "Algorithm", 
+	value.name = "Time")
+
+# Ploting the data using ggplot2
+library(ggplot2)
+ggplot(df, aes(x=Size, y=Time, color=factor(Algorithm))) + 
+ geom_point() + geom_line() +
+ theme_bw() + scale_y_continuous(name="Time [s]") + 
+ scale_x_continuous(name="Array size") +
+ ggtitle("Comparing different quicksort implementations") +
+ guides(color=guide_legend(title="Implementation of\nthe algorithm"))
+#+end_src  
+
+#+RESULTS:
+[[file:comparison.png]]
+
