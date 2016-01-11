@@ -23,8 +23,11 @@ built="$(grep -e "Built-in quicksort took: " $inputfile | cut -d " " -f4)"
 echo "$num, $seq, $par, $built" >> $outputfile
 #+END_SRC
 
-#+call: Extract(inputfile="../data/testing/Test0.org", outputfile="tmp_results") :results silent
-#+call: Extract(inputfile="../data/testing/Test1.org", outputfile="tmp_results") :results silent
+#+call: Extract(inputfile="../data/xp2/QuickSortData0.org", outputfile="tmp_results") :results silent
+#+call: Extract(inputfile="../data/xp2/QuickSortData1.org", outputfile="tmp_results") :results silent
+#+call: Extract(inputfile="../data/xp2/QuickSortData2.org", outputfile="tmp_results") :results silent
+#+call: Extract(inputfile="../data/xp2/QuickSortData3.org", outputfile="tmp_results") :results silent
+#+call: Extract(inputfile="../data/xp2/QuickSortData4.org", outputfile="tmp_results") :results silent
 
 * Basic comparison
 

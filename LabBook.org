@@ -697,3 +697,22 @@ git log -1
 
 *** Notes:
     - This were just some initial experiments to see how the workflow goes
+** xp2						       :TEST:_LUKA:@WINNETOU:
+*** git:
+#+begin_src sh :results output
+git log -1
+#+end_src
+
+#+RESULTS:
+: commit 0ee2175a6a6a7d2db7697b38ca22771d18a01422
+: Merge: 9874eed 7c0d1c8
+: Author: Luka Stanisic <luka.stanisic@imag.fr>
+: Date:   Mon Jan 11 20:00:07 2016 +0100
+: 
+:     Merging with xp2 branch
+
+*** Notes:
+    - Experimentation workflow is improved
+    - The performance is measured for several different array sizes (1M, 2M, 4M, 8M and 16M)
+    - Finally we did some [[file:analysis/Comparison.org][analysis]] which provides an adequate plots of the comparing different implementations of Quicksort algorithm
+      
