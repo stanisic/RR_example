@@ -316,7 +316,6 @@ fi
   cd $basename
 #+end_src
 
-
 **** get_info.sh
  :PROPERTIES:
  :header-args:    :tangle get_info.sh
@@ -479,6 +478,112 @@ then
    echo "** SVN REVISION OF REPOSITORY" >> $outputfile
    svn info >> $outputfile   
 fi
+#+end_src
+
+**** git_revert.sh
+ :PROPERTIES:
+ :header-args:    :tangle git_revert.sh
+ :END:
+
+     This script is a wrapper around simple git revert. It will detect
+     all source code commits inside /xp#/ branch and it will revert them
+     automatically. Thus, try to always keep separate commits for
+     adding data files and changing source code.
+
+***** Initial variables, help and their parsing.
+      Bash preamble.
+
+#+begin_src sh
+#!/bin/bash
+# Script to get machine information before doing the experiment
+
+set +e # Don't fail fast since some information is maybe not available
+#+end_src
+
+***** Verification, commit detection and reverting
+      Doing revert only for experimental branches.
+
+#+begin_src sh
+whole_list="list.out"
+rm -f $whole_list
+branch=$(eval basename $(git symbolic-ref HEAD))
+echo "Now you are in git branch: ${branch}"
+if [[ "$branch" == master || "$branch" == data ]]; then
+    echo "ERROR: Revert should not be performed for master or data branch!"
+    exit 2
+fi
+#+end_src
+
+      Making sure everything is commited.
+
+#+begin_src sh
+if git diff-index --quiet HEAD --; then
+    echo "Everything is commited"
+else
+    echo "Warning: It is better to commit everything before doing revert!"
+fi
+#+end_src
+
+      Finding commits that need reverting.
+
+#+begin_src sh
+all_commits=$(git log --format=format:%H master..HEAD)
+while IFS= read -r commit
+do
+    type=unknown
+    f=$(git diff-tree --no-commit-id --name-only $commit)
+    while IFS= read -r line 
+    do
+	case "$type,$line" in
+	    "unknown,data") type=Data
+		;;
+	    "unknown,"*) type=Src
+		;;
+	    "Src,data") type=error
+		echo "There is a commit with Src and Data together"
+		exit 2
+		;;
+	    "Src,"*)
+		;;
+	    "Data,"*) type=error
+		echo "There is a commit with Src and Data together"
+		exit 3
+		;;
+	    *) type=internal_error
+		;;
+	esac
+    done <<< "$f"
+    echo -e "$type $commit" >> $whole_list
+done <<< "$all_commits"
+#+end_src
+
+     Showing all commits.
+
+#+begin_src sh
+echo "All commits and their type:"
+cat $whole_list
+#+end_src
+
+     Reverting Src commits.
+     
+#+begin_src sh
+revert_list=$(cat $whole_list | grep "^Src" | cut -d' ' -f 2)
+while IFS= read -r commit
+do
+    git revert -n $commit
+done <<< "$revert_list"
+echo "Revert before merging with data branch"
+#+end_src
+
+    Commiting revert-doing one big "anti-commit"
+#+begin_src sh
+git commit -am "Revert before merging with data branch-done by git_revert.sh"
+echo "DONE: Single anti-commit!"
+#+end_src
+
+     Cleaning up.
+#+begin_src sh
+rm -f $whole_list
 #+end_src
 
 *** src/
