@@ -185,6 +185,19 @@ while getopts "tcvh" opt; do
 done
 #+end_src
 
+    Getting input parameter (number of elements to sort) from the
+    command line argument.
+
+#+begin_src sh
+shift $((OPTIND - 1))
+NUM=$1
+if [[ $# > 1 ]]; then
+    echo 'ERROR-more than one input parameter'
+    help_script
+    exit 2
+fi
+#+end_src
+
 ***** Verification
       Verifying that everything is commited (if this is not a simple
       test), that we are in the right branch.
@@ -277,7 +290,7 @@ fi
 
 #+begin_src sh
   # Prepare running options
-  running="$programname"
+  running="$programname $NUM"
 
   echo "* COMMAND LINE USED FOR RUNNING EXPERIMENT" >> $outputfile
   echo $running >> $outputfile
@@ -617,12 +630,21 @@ rm -f $whole_list
     - Everything that is already in /master/ branch
     - All the data gathered from previous experimental campaigns and some analysis which compares different experimental sets of results
 
-** TODO Examples for running scripts
-   - For running experiments execute
+** Examples for running scripts
+   For running test experiments, just to validate that the script is
+   working as planned (without caring about the actual experimental
+   results).
 
-#+BEGIN_SRC 
+#+begin_src sh :results output
+./run_xp.sh -t -c -v
+#+end_src
 
-#+END_SRC
+   For executing real experiment, with an input parameter 2000000.
+
+#+begin_src sh :results output
+./run_xp.sh -c -v 2000000
+#+end_src
+
 ** ChangeLog
    - Contains important coarse-grain information about the changes on the project.
    - This section may be redundant if:
