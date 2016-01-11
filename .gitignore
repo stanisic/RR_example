@@ -1,32 +1,12 @@
-# Object files
+# Ignore the executable file 
+src/parallelQuicksort
+
+# Ignore all object files
 *.o
-*.ko
-*.obj
-*.elf
 
-# Precompiled Headers
-*.gch
-*.pch
+# Ignore scripts that are tangled from laboratory notebook
+run_xp.sh
+get_info.sh
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
+# Ignore all the data inside data/testing folder
+data/testing/*
