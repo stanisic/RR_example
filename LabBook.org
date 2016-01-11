@@ -517,9 +517,10 @@ fi
 
 #+begin_src sh
 #!/bin/bash
-# Script to get machine information before doing the experiment
+# Script for doing a revert all source modifications before merging "exp" branch with main "data" branch
+# Shall always be called from "exp" branch
 
-set +e # Don't fail fast since some information is maybe not available
+set -e # fail fast
 #+end_src
 
 ***** Verification, commit detection and reverting
