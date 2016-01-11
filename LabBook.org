@@ -633,4 +633,20 @@ echo "MERGING IS DONE SUCCESSFULLY!"
 #+begin_src sh :results output :exports both
  git tag -n1
 #+end_src
-* Experiment results /
+* Experiment results
+** xp1						       :TEST:_LUKA:@WINNETOU:
+*** git:
+#+begin_src sh :results output
+git log -1
+#+end_src
+
+#+RESULTS:
+: commit e0e5b84b3afab6de115c2713cb9d38d4e55841f5
+: Merge: d3034d1 f055ec0
+: Author: Luka Stanisic <luka.stanisic@imag.fr>
+: Date:   Mon Jan 11 17:33:53 2016 +0100
+: 
+:     Merging with xp1 branch
+
+*** Notes:
+    - This were just some initial experiments to see how the workflow goes
