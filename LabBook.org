@@ -127,7 +127,7 @@ set -e # fail fast
 basename="$PWD"
 host="$(hostname | sed 's/[0-9]*//g' | cut -d'.' -f1)"
 datafolder=""
-dataname="QuickSortData"
+dataname="QuicksortData"
 srcfolder="$basename/src"
 
 # DoE parameters
@@ -256,7 +256,7 @@ outputfile="$datafolder/$dataname${bkup}.org"
 
 #+begin_src sh
 # Starting to write output file and capturing all metadata
-title="Experiment on $(eval hostname) machine for parallel QuickSort"
+title="Experiment for parallel quicksort of $NUM elements"
 ./get_info.sh -t "$title" $outputfile
 #+end_src
 
@@ -420,7 +420,7 @@ echo "#+TITLE: $title" >> $outputfile
 echo "#+DATE: $(eval date)" >> $outputfile
 echo "#+AUTHOR: $(eval whoami)" >> $outputfile
 echo "#+MACHINE: $(eval hostname)" >> $outputfile
-echo "#+ORIGINAL FILE NAME: $(eval basename $outputfile)" >> $outputfile
+echo "#+FILENAME: $(eval basename $outputfile)" >> $outputfile
 echo " " >> $outputfile 
 #+end_src
 
@@ -611,11 +611,27 @@ rm -f $whole_list
 
 *** src/
 **** parallelQuicksort.c
-     - A filed copied from Arnaud Legrand, which he used for his
-       [[https://github.com/alegrand/M2R-ParallelQuicksort][performance evaluation classes]] for Master 2 students.
-     - This code quicksorts a random list of size given by the
-       argument (default 1M) and times both sequential quicksort and
-       parallel (using Pthreads).
+     I copied the code from Arnaud Legrand, which he used for his
+     [[https://github.com/alegrand/M2R-ParallelQuicksort][performance evaluation classes]] for Master 2 students.
+
+     The code is quite simple at the moment and can be run in the
+     following way.
+
+#+BEGIN_SRC c :eval never
+./src/parallelQuicksort [1000000]
+#+END_SRC
+
+
+     When run, the code executes initializes an array of the size
+     given in argument (1000000 by default) with random integer values
+     and sorts it using:
+
+      1) a custom sequential implementation;
+      2) a custom parallel implementation;
+      3) the libc qsort function.
+
+      Times are reported in seconds.
+
 **** Makefile
      - Typical Makefile (also taken from Arnaud Legrand) which compiles C code
 *** analysis/
