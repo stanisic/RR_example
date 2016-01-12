@@ -55,3 +55,54 @@ ggplot(df, aes(x=Size, y=Time, color=factor(Algorithm))) +
 #+RESULTS:
 [[file:comparison.png]]
 
+* Multiple runs in a same data file
+** Extracting data
+
+#+begin_src perl :tangle perl_extractor.pl
+use strict;
+
+my($line);
+my($size);
+
+print "Size, Type, Time\n" ;
+while($line=<>) {
+    chomp $line;
+    if($line =~/^Array size: ([\d\.]*)$/) {
+        $size = $1;
+        next;
+    } 
+    if($line =~/^(.*) quicksort.*: ([\d\.]*) sec.$/) {
+        print "$size, \"$1\", $2\n" ;
+        next;
+    } 
+}
+#+end_src
+
+#+header: :var inputfile="../data/testing/Test0.org" outputfile="tmp_results2"
+#+begin_src sh :results silent 
+sed -n '/* STDOUT/,/* ELAPSED TIME/{/* ELAPSED TIME/!p}' $inputfile > tmp
+tail -n +1 tmp > tmp2
+perl perl_extractor.pl < tmp2 > $outputfile
+rm -f tmp tmp2
+#+end_src
+
+** Analysing the measured performance
+
+#+begin_src R :results graphics :session *R* :dir . :exports both :file comparison2.png :width 700 :height 400
+# Reading the data
+df <- read.csv("tmp_results2.csv", header=TRUE)
+
+# Ploting the data using ggplot2
+library(ggplot2)
+ggplot(df, aes(x=Size, y=Time, color=factor(Type))) + 
+ geom_point() + stat_summary(fun.y = mean, geom="line", size=2) +
+ theme_bw() + scale_y_continuous(name="Time [s]") + 
+ scale_x_continuous(name="Array size") +
+ ggtitle("Comparing different quicksort implementations") +
+ guides(color=guide_legend(title="Implementation of\nthe algorithm"))
+#+end_src  
+
+#+RESULTS:
+[[file:comparison2.png]]
+
+
