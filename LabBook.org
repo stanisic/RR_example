@@ -846,19 +846,92 @@ Untracked files:
 no changes added to commit (use "git add" and/or "git commit -a")
 #+end_example
 
-    Oh I forgot this file have been modified, so I first need to
-    commit it and only then I can run the code. Thus, I will prepare
+    Oh forgot that this file have been modified, so first we need to
+    commit it and only then we can run the code. Thus, we will prepare
     the next two blocks, save it, commit everything, then run the
     experiments (but without saving LabBook.org so Git will not detect
-    changes in this file ;)), and only when it is finished I can
+    changes in this file ;)), and only when it is finished we can
     continue normally.
 
 #+begin_src sh :results output :session org-sh
 git commit -am "Running experiments through laboratory notebook"
 #+end_src
 
-#+begin_src sh :results output :session org-sh
+#+RESULTS:
+: [xp3 d079c36] Running experiments through laboratory notebook
+:  1 file changed, 109 insertions(+), 1 deletion(-)
+
+#+begin_src sh :results silent :session org-sh
 ./run_xp.sh -c -v 1000 10000000
 #+end_src
+
+    The execution was performed correctly (checked in the session
+    buffer), but the output is long so it was later deleted. We can
+    add the file to the repository.
+
+#+begin_src sh :results output :session org-sh
+git add data/xp3/QuicksortData0.org
+git commit -m "Adding experiment data"
+#+end_src
+
+#+RESULTS:
+: 
+: [xp3 9a163ee] Adding experiment data
+:  1 file changed, 601 insertions(+)
+:  create mode 100644 data/xp3/QuicksortData0.org
+
+**** Analysing the results
+
+     Here we will rely on the code from [[file:analysis/Comparison.org][analysis file]], more precisely
+     the third section of it. Most of it will just be copy/pasted
+     here, with paths modified.
+
+#+header: :var inputfile="data/xp3/QuicksortData0.org" outputfile="tmp_results2.csv"
+#+begin_src sh :results silent 
+sed -n '/* STDOUT/,/* ELAPSED TIME/{/* ELAPSED TIME/!p}' $inputfile > tmp
+tail -n +1 tmp > tmp2
+perl analysis/perl_extractor.pl < tmp2 > $outputfile
+rm -f tmp tmp2
+#+end_src
+
+#+begin_src R :results graphics :session *R* :dir . :exports both :file comparison2-a.png :width 700 :height 400
+# Reading the data
+df <- read.csv("tmp_results2.csv", header=TRUE)
+
+# Ploting the data using ggplot2
+library(ggplot2)
+ggplot(df, aes(x=Size, y=Time, color=factor(Type))) + 
+ geom_point() + stat_summary(fun.y = mean, geom="line", size=2) +
+ theme_bw() + scale_y_continuous(name="Time [s]") + 
+ scale_x_continuous(name="Array size") +
+ ggtitle("Comparing different quicksort implementations") +
+ guides(color=guide_legend(title="Implementation of\nthe algorithm"))
+#+end_src 
+
+#+RESULTS:
+[[file:comparison2-a.png]]
+
+
+    OK, so there are some noise, but generally parallel implementation
+    of quicksort (for this code and machine) seems to work better
+    starting from approximately 7 million elements. Let's run some
+    more experiments around that value where the lines are crossing.
+
+**** Running second experiment and its analysis
+     We will repeat the process, just this times changing the range
+     for which we want the program to be run.
+
+#+begin_src sh :results output :session org-sh
+git commit -am "Running second experiments through laboratory notebook"
+#+end_src
+
+#+RESULTS:
+: [xp3 d079c36] Running experiments through laboratory notebook
+:  1 file changed, 109 insertions(+), 1 deletion(-)
+
+#+begin_src sh :results silent :session org-sh
+./run_xp.sh -c -v 1000 10000000
+#+end_src
+
 *** Notes:
     
