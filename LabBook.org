@@ -792,3 +792,243 @@ git log -1
     - The performance is measured for several different array sizes (1M, 2M, 4M, 8M and 16M)
     - Finally we did some [[file:analysis/Comparison.org][analysis]] which provides an adequate plots of the comparing different implementations of Quicksort algorithm
       
+** xp3						  :IMPORTANT:_LUKA:@WINNETOU:
+*** git:
+#+begin_src sh :results output
+git log -1
+#+end_src
+
+#+RESULTS:
+: commit 21308e45f9ee048919ac1e7838c773455fff08d6
+: Author: Luka Stanisic <luka.stanisic@imag.fr>
+: Date:   Tue Jan 12 16:47:13 2016 +0100
+: 
+:     Easier if multiple runs are stored in a same file
+
+*** Running experiments and analysis through Org-mode
+    There is another possibility which is to run the experiments,
+    handle all git operations, analyze the results and take notes-all
+    directly within the laboratory notebook. By using different
+    session such approach can even allow running experiments on remote
+    machines.
+
+    In the current workflow, such approach is a bit tedious as the
+    LabBook itself is under Git revision. This slightly complicates
+    running the experiments (which requires that everything is
+    commited) as well as merging with /data/ branch (which will detect
+    changes in LabBook.org). Thus, to run it in such a way workflow
+    needs to be slightly modified, which is not an issues as the point
+    of having a lightweight and flexible workflow in the first place
+    is to be able to adapt it.
+
+**** Executing experiments
+
+     First we run the test to see if the script for running
+     experiments is working properly.
+
+#+begin_src sh :results output :session org-sh
+./run_xp.sh -t -c -v
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Cleaning the previously compiled code...
+Compiling...
+Executing program...
+Array size: 1000000
+Sequential quicksort took: 0.206875 sec.
+Parallel quicksort took: 0.959085 sec.
+Built-in quicksort took: 0.203203 sec.
+Array size: 1000000
+Sequential quicksort took: 0.209414 sec.
+Parallel quicksort took: 0.666978 sec.
+Built-in quicksort took: 0.202539 sec.
+Array size: 1000000
+Sequential quicksort took: 0.204689 sec.
+Parallel quicksort took: 0.557998 sec.
+Built-in quicksort took: 0.203058 sec.
+Array size: 1000000
+Sequential quicksort took: 0.203429 sec.
+Parallel quicksort took: 0.883960 sec.
+Built-in quicksort took: 0.207271 sec.
+Array size: 1000000
+Sequential quicksort took: 0.207608 sec.
+Parallel quicksort took: 0.823109 sec.
+Built-in quicksort took: 0.201284 sec.
+#+end_example
+
+
+     Seems fine, lets execute real experiments for a array size that varies from 1000 to 10000000 elements.
+
+#+begin_src sh :results output :session org-sh
+./run_xp.sh -c -v 1000 10000000
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Now you are in git branch: xp3
+ERROR-need to commit before doing experiment!
+On branch xp3
+Changes not staged for commit:
+..." to update what will be committed)
+..." to discard changes in working directory)
+
+	modified:   LabBook.org
+
+Untracked files:
+..." to include in what will be committed)
+
+	input_values
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+    Oh forgot that this file have been modified, so first we need to
+    commit it and only then we can run the code. Thus, we will prepare
+    the next two blocks, save it, commit everything, then run the
+    experiments (but without saving LabBook.org so Git will not detect
+    changes in this file ;)), and only when it is finished we can
+    continue normally.
+
+#+begin_src sh :results output :session org-sh
+git commit -am "Running experiments through laboratory notebook"
+#+end_src
+
+#+RESULTS:
+: [xp3 d079c36] Running experiments through laboratory notebook
+:  1 file changed, 109 insertions(+), 1 deletion(-)
+
+#+begin_src sh :results silent :session org-sh
+./run_xp.sh -c -v 1000 10000000
+#+end_src
+
+    The execution was performed correctly (checked in the session
+    buffer), but the output is long so it was later deleted. We can
+    add the file to the repository.
+
+#+begin_src sh :results output :session org-sh
+git add data/xp3/QuicksortData0.org
+git commit -m "Adding experiment data"
+#+end_src
+
+#+RESULTS:
+: 
+: [xp3 9a163ee] Adding experiment data
+:  1 file changed, 601 insertions(+)
+:  create mode 100644 data/xp3/QuicksortData0.org
+
+**** Analysing the results
+
+     Here we will rely on the code from [[file:analysis/Comparison.org][analysis file]], more precisely
+     the third section of it. Most of it will just be copy/pasted
+     here, with paths modified.
+
+#+header: :var inputfile="data/xp3/QuicksortData0.org" outputfile="tmp_results2.csv"
+#+begin_src sh :results silent 
+sed -n '/* STDOUT/,/* ELAPSED TIME/{/* ELAPSED TIME/!p}' $inputfile > tmp
+tail -n +1 tmp > tmp2
+perl analysis/perl_extractor.pl < tmp2 > $outputfile
+rm -f tmp tmp2
+#+end_src
+
+#+begin_src R :results graphics :session *R* :dir . :exports both :file comparison2-a.png :width 700 :height 400
+# Reading the data
+df <- read.csv("tmp_results2.csv", header=TRUE)
+
+# Ploting the data using ggplot2
+library(ggplot2)
+ggplot(df, aes(x=Size, y=Time, color=factor(Type))) + 
+ geom_point() + stat_summary(fun.y = mean, geom="line", size=2) +
+ theme_bw() + scale_y_continuous(name="Time [s]") + 
+ scale_x_continuous(name="Array size") +
+ ggtitle("Comparing different quicksort implementations") +
+ guides(color=guide_legend(title="Implementation of\nthe algorithm"))
+#+end_src 
+
+#+RESULTS:
+[[file:comparison2-a.png]]
+
+
+    OK, so there are some noise, but generally parallel implementation
+    of quicksort (for this code and machine) seems to work better
+    starting from approximately 7 million elements. Let's run some
+    more experiments around that value where the lines are crossing.
+
+**** Running second experiment and its analysis
+     We will repeat the process, just this times changing the range
+     for which we want the program to be run.
+
+#+begin_src sh :results output :session org-sh
+git commit -am "Running second experiments through laboratory notebook"
+#+end_src
+
+#+RESULTS:
+: [xp3 5fdf3dd] Running second experiments through laboratory notebook
+:  1 file changed, 76 insertions(+), 3 deletions(-)
+
+#+begin_src sh :results silent :session org-sh
+./run_xp.sh -c -v 6000000 9000000
+#+end_src
+
+#+begin_src sh :results output :session org-sh
+git add data/xp3/QuicksortData1.org
+git commit -m "Adding second experiment data"
+#+end_src
+
+#+RESULTS:
+: 
+: [xp3 a85f986] Adding second experiment data
+:  1 file changed, 601 insertions(+)
+:  create mode 100644 data/xp3/QuicksortData1.org
+
+#+header: :var inputfile="data/xp3/QuicksortData1.org" outputfile="tmp_results2-b.csv"
+#+begin_src sh :results silent 
+sed -n '/* STDOUT/,/* ELAPSED TIME/{/* ELAPSED TIME/!p}' $inputfile > tmp
+tail -n +1 tmp > tmp2
+perl analysis/perl_extractor.pl < tmp2 > $outputfile
+rm -f tmp tmp2
+#+end_src
+
+#+begin_src R :results graphics :session *R* :dir . :exports both :file comparison2-b.png :width 700 :height 400
+# Reading the data
+df <- read.csv("tmp_results2-b.csv", header=TRUE)
+
+# Ploting the data using ggplot2
+library(ggplot2)
+ggplot(df, aes(x=Size, y=Time, color=factor(Type))) + 
+ geom_point() + stat_summary(fun.y = mean, geom="line", size=2) +
+ theme_bw() + scale_y_continuous(name="Time [s]") + 
+ scale_x_continuous(name="Array size") +
+ ggtitle("Comparing different quicksort implementations") +
+ guides(color=guide_legend(title="Implementation of\nthe algorithm"))
+#+end_src 
+
+#+RESULTS:
+[[file:comparison2-b.png]]
+
+
+    OK so this is definitely the interval in which the lines cross. We
+    can see how parallel implementation has the most variability,
+    while the other two are much more stable.
+
+**** Conclusion
+     It seems that on a personal laptop (winnetou) with the provided
+     implementation of the algorithms, sequential and built-in libc
+     are better than the parallel for the array size lower than 5
+     million elements, while parallel is better for arrays larger than
+     10 millions. For the cases in between there is too much
+     variability to conclude anything.
+
+     This is just an initial investigation and more accurate
+     measurements need to be done in future.
+
+*** Notes:
+    - Experiments on a local laptop that show that sequential and
+      built-in libc are better than the parallel for the array size
+      lower than 5 million elements, while parallel is better for
+      arrays larger than 10 millions. For the cases in between there
+      is too much variability to conclude anything
+    - The whole experimentation process and analysis were performed
+      directly within the laboratory notebook
+    
