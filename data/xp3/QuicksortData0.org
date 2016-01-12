@@ -1,0 +1,601 @@
+#+TITLE: Experiment for parallel quicksort
+#+DATE: Tue Jan 12 17:13:54 CET 2016
+#+AUTHOR: stanisic
+#+MACHINE: winnetou
+#+FILENAME: QuicksortData0.org
+ 
+* MACHINE INFO
+** PEOPLE LOGGED WHEN EXPERIMENT STARTED
+stanisic :0           2016-01-12 10:41 (:0)
+stanisic pts/13       2016-01-12 10:41 (:0)
+stanisic pts/8        2016-01-12 10:55 (:0)
+** ENVIRONMENT VARIABLES
+LC_PAPER=en_US.UTF-8
+XDG_VTNR=7
+MANPATH=/home/stanisic/Repository/git-subrepo/man:/home/stanisic/Repository/git-subrepo/man:
+XDG_SESSION_ID=c2
+LC_ADDRESS=en_US.UTF-8
+CLUTTER_IM_MODULE=xim
+LC_MONETARY=en_US.UTF-8
+SELINUX_INIT=YES
+XDG_GREETER_DATA_DIR=/var/lib/lightdm-data/stanisic
+SPACK_ROOT=/home/stanisic/Repository/spack
+GPG_AGENT_INFO=/run/user/1000/keyring-LQaIJj/gpg:0:1
+SHELL=/bin/bash
+VTE_VERSION=3409
+TERM=dumb
+LC_NUMERIC=en_US.UTF-8
+WINDOWID=60817420
+GNOME_KEYRING_CONTROL=/run/user/1000/keyring-LQaIJj
+UPSTART_SESSION=unix:abstract=/com/ubuntu/upstart-session/1000/1643
+GTK_MODULES=overlay-scrollbar:unity-gtk-module
+USER=stanisic
+EMACS=t
+LC_TELEPHONE=en_US.UTF-8
+LS_COLORS=
+XDG_SESSION_PATH=/org/freedesktop/DisplayManager/Session0
+XDG_SEAT_PATH=/org/freedesktop/DisplayManager/Seat0
+SSH_AUTH_SOCK=/run/user/1000/keyring-LQaIJj/ssh
+TERMCAP=
+DEFAULTS_PATH=/usr/share/gconf/ubuntu.default.path
+COLUMNS=81
+XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/usr/share/upstart/xdg:/etc/xdg
+PATH=/home/stanisic/Repository/spack/bin:/home/stanisic/Repository/git-subrepo/lib:/home/stanisic/Repository/spack/bin:/home/stanisic/Repository/git-subrepo/lib:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+DESKTOP_SESSION=ubuntu
+QT_QPA_PLATFORMTHEME=appmenu-qt5
+QT_IM_MODULE=ibus
+LC_IDENTIFICATION=en_US.UTF-8
+JOB=gnome-session
+PWD=/home/stanisic/Repository/RR_example
+XMODIFIERS=@im=ibus
+LANG=en_US.UTF-8
+GNOME_KEYRING_PID=1641
+MANDATORY_PATH=/usr/share/gconf/ubuntu.mandatory.path
+GDM_LANG=en_US
+LC_MEASUREMENT=en_US.UTF-8
+IM_CONFIG_PHASE=1
+COMPIZ_CONFIG_PROFILE=ubuntu
+PAPERSIZE=letter
+GDMSESSION=ubuntu
+SESSIONTYPE=gnome-session
+XDG_SEAT=seat0
+HOME=/home/stanisic
+SHLVL=5
+LANGUAGE=en_US:en
+GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+UPSTART_INSTANCE=
+LOGNAME=stanisic
+UPSTART_EVENTS=started starting
+QT4_IM_MODULE=xim
+XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-QHwOvGyAKD
+LESSOPEN=| /usr/bin/lesspipe %s
+UPSTART_JOB=unity-settings-daemon
+TEXTDOMAIN=im-config
+INSTANCE=Unity
+XDG_RUNTIME_DIR=/run/user/1000
+DISPLAY=:0
+GTK_IM_MODULE=ibus
+XDG_CURRENT_DESKTOP=Unity
+INSIDE_EMACS=24.3.1,comint
+LC_TIME=en_US.UTF-8
+LESSCLOSE=/usr/bin/lesspipe %s %s
+TEXTDOMAINDIR=/usr/share/locale/
+COLORTERM=gnome-terminal
+XAUTHORITY=/home/stanisic/.Xauthority
+LC_NAME=en_US.UTF-8
+_=/usr/bin/env
+** HOSTNAME
+winnetou
+** MEMORY HIERARCHY
+Machine (7936MB)
+  Socket L#0 + L3 L#0 (6144KB)
+    L2 L#0 (256KB) + L1d L#0 (32KB) + L1i L#0 (32KB) + Core L#0
+      PU L#0 (P#0)
+      PU L#1 (P#4)
+    L2 L#1 (256KB) + L1d L#1 (32KB) + L1i L#1 (32KB) + Core L#1
+      PU L#2 (P#1)
+      PU L#3 (P#5)
+    L2 L#2 (256KB) + L1d L#2 (32KB) + L1i L#2 (32KB) + Core L#2
+      PU L#4 (P#2)
+      PU L#5 (P#6)
+    L2 L#3 (256KB) + L1d L#3 (32KB) + L1i L#3 (32KB) + Core L#3
+      PU L#6 (P#3)
+      PU L#7 (P#7)
+  HostBridge L#0
+    PCIBridge
+      PCI 10de:0dfc
+        GPU L#0 "card0"
+    PCI 8086:1502
+      Net L#1 "eth0"
+    PCIBridge
+      PCI 8086:422b
+        Net L#2 "wlan0"
+    PCI 8086:1e03
+      Block L#3 "sda"
+      Block L#4 "sr0"
+** CPU INFO
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 1200.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 1200.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 1200.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 1200.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 1200.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 1200.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 2100.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 5
+initial apicid	: 5
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 58
+model name	: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 2601.000
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 7
+initial apicid	: 7
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms
+bogomips	: 5183.21
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+** CPU GOVERNOR
+ondemand
+** CPU FREQUENCY
+1200000
+** GPU INFO FROM NVIDIA-SMI
+
+==============NVSMI LOG==============
+
+Timestamp                           : Tue Jan 12 17:13:54 2016
+Driver Version                      : 331.113
+
+Attached GPUs                       : 1
+GPU 0000:01:00.0
+    Product Name                    : NVS 5200M
+    Display Mode                    : N/A
+    Display Active                  : N/A
+    Persistence Mode                : Disabled
+    Accounting Mode                 : N/A
+    Accounting Mode Buffer Size     : N/A
+    Driver Model
+        Current                     : N/A
+        Pending                     : N/A
+    Serial Number                   : N/A
+    GPU UUID                        : GPU-3ded7c2d-5614-bf14-8240-563d786f7c69
+    Minor Number                    : 0
+    VBIOS Version                   : 70.08.A8.00.13
+    Inforom Version
+        Image Version               : N/A
+        OEM Object                  : N/A
+        ECC Object                  : N/A
+        Power Management Object     : N/A
+    GPU Operation Mode
+        Current                     : N/A
+        Pending                     : N/A
+    PCI
+        Bus                         : 0x01
+        Device                      : 0x00
+        Domain                      : 0x0000
+        Device Id                   : 0x0DFC10DE
+        Bus Id                      : 0000:01:00.0
+        Sub System Id               : 0x05341028
+        GPU Link Info
+            PCIe Generation
+                Max                 : N/A
+                Current             : N/A
+            Link Width
+                Max                 : N/A
+                Current             : N/A
+        Bridge Chip
+            Type                    : N/A
+            Firmware                : N/A
+    Fan Speed                       : N/A
+    Performance State               : N/A
+    Clocks Throttle Reasons         : N/A
+    FB Memory Usage
+        Total                       : 1023 MiB
+        Used                        : 393 MiB
+        Free                        : 630 MiB
+    BAR1 Memory Usage
+        Total                       : N/A
+        Used                        : N/A
+        Free                        : N/A
+    Compute Mode                    : Default
+    Utilization
+        Gpu                         : N/A
+        Memory                      : N/A
+    Ecc Mode
+        Current                     : N/A
+        Pending                     : N/A
+    ECC Errors
+        Volatile
+            Single Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Total               : N/A
+            Double Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Total               : N/A
+        Aggregate
+            Single Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Total               : N/A
+            Double Bit            
+                Device Memory       : N/A
+                Register File       : N/A
+                L1 Cache            : N/A
+                L2 Cache            : N/A
+                Texture Memory      : N/A
+                Total               : N/A
+    Retired Pages
+        Single Bit ECC              : N/A
+        Double Bit ECC              : N/A
+        Pending                     : N/A
+    Temperature
+        Gpu                         : 62 C
+    Power Readings
+        Power Management            : N/A
+        Power Draw                  : N/A
+        Power Limit                 : N/A
+        Default Power Limit         : N/A
+        Enforced Power Limit        : N/A
+        Min Power Limit             : N/A
+        Max Power Limit             : N/A
+    Clocks
+        Graphics                    : N/A
+        SM                          : N/A
+        Memory                      : N/A
+    Applications Clocks
+        Graphics                    : N/A
+        Memory                      : N/A
+    Default Applications Clocks
+        Graphics                    : N/A
+        Memory                      : N/A
+    Max Clocks
+        Graphics                    : N/A
+        SM                          : N/A
+        Memory                      : N/A
+    Compute Processes               : N/A
+
+** LINUX AND GCC VERSIONS
+Linux version 3.13.0-61-generic (buildd@lgw01-50) (gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) ) #100-Ubuntu SMP Wed Jul 29 11:21:34 UTC 2015
+* CODE REVISIONS
+** GIT REVISION OF REPOSITORY
+commit d079c36c7e40a89ee89ea2d8041b66b4c8244c63
+Author: Luka Stanisic <luka.stanisic@imag.fr>
+Date:   Tue Jan 12 17:10:47 2016 +0100
+
+    Running experiments through laboratory notebook
+* COMPILATION
+** COMPILATION OUTPUT
+make: Entering directory `/home/stanisic/Repository/RR_example/src'
+cc   -g -Wall -Wshadow -Wcast-align -Waggregate-return -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpointer-arith -Wwrite-strings -finline-functions -O0 -pthread -lrt -std=c99  -c -o parallelQuicksort.o parallelQuicksort.c
+cc   -g -Wall -Wshadow -Wcast-align -Waggregate-return -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpointer-arith -Wwrite-strings -finline-functions -O0 -pthread -lrt -std=c99  parallelQuicksort.o  -o parallelQuicksort 
+make: Leaving directory `/home/stanisic/Repository/RR_example/src'
+** SHARED LIBRARIES DEPENDENCIES
+	linux-vdso.so.1 =>  (0x00007ffec7079000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007ff080457000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007ff080092000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007ff080675000)
+* COMMAND LINE USED FOR RUNNING EXPERIMENT
+./src/parallelQuicksort
+* STDERR OUTPUT
+* STDOUT OUTPUT
+Array size: 10000000
+Sequential quicksort took: 2.434733 sec.
+Parallel quicksort took: 2.236640 sec.
+Built-in quicksort took: 2.397704 sec.
+Array size: 9370817
+Sequential quicksort took: 2.347361 sec.
+Parallel quicksort took: 2.103184 sec.
+Built-in quicksort took: 2.217945 sec.
+Array size: 9148146
+Sequential quicksort took: 2.259822 sec.
+Parallel quicksort took: 2.039270 sec.
+Built-in quicksort took: 2.274047 sec.
+Array size: 9370817
+Sequential quicksort took: 2.241555 sec.
+Parallel quicksort took: 2.056017 sec.
+Built-in quicksort took: 2.365933 sec.
+Array size: 8304644
+Sequential quicksort took: 1.963800 sec.
+Parallel quicksort took: 1.924076 sec.
+Built-in quicksort took: 2.007463 sec.
+Array size: 10000000
+Sequential quicksort took: 2.469779 sec.
+Parallel quicksort took: 2.240591 sec.
+Built-in quicksort took: 2.433087 sec.
+Array size: 2862108
+Sequential quicksort took: 0.655533 sec.
+Parallel quicksort took: 0.930231 sec.
+Built-in quicksort took: 0.624800 sec.
+Array size: 2862108
+Sequential quicksort took: 0.638846 sec.
+Parallel quicksort took: 0.938152 sec.
+Built-in quicksort took: 0.639168 sec.
+Array size: 9370817
+Sequential quicksort took: 2.332107 sec.
+Parallel quicksort took: 2.074809 sec.
+Built-in quicksort took: 2.257405 sec.
+Array size: 8304644
+Sequential quicksort took: 2.022435 sec.
+Parallel quicksort took: 1.993331 sec.
+Built-in quicksort took: 1.968821 sec.
+Array size: 9370817
+Sequential quicksort took: 2.243789 sec.
+Parallel quicksort took: 2.244641 sec.
+Built-in quicksort took: 2.250791 sec.
+Array size: 1000
+Sequential quicksort took: 0.000119 sec.
+Parallel quicksort took: 0.270953 sec.
+Built-in quicksort took: 0.000480 sec.
+Array size: 1000
+Sequential quicksort took: 0.000339 sec.
+Parallel quicksort took: 0.288376 sec.
+Built-in quicksort took: 0.000481 sec.
+Array size: 10000000
+Sequential quicksort took: 2.403038 sec.
+Parallel quicksort took: 2.209986 sec.
+Built-in quicksort took: 2.370703 sec.
+Array size: 10000000
+Sequential quicksort took: 2.509206 sec.
+Parallel quicksort took: 2.291239 sec.
+Built-in quicksort took: 2.408824 sec.
+Array size: 9148146
+Sequential quicksort took: 2.194475 sec.
+Parallel quicksort took: 2.043651 sec.
+Built-in quicksort took: 2.188958 sec.
+Array size: 1000
+Sequential quicksort took: 0.000109 sec.
+Parallel quicksort took: 0.275836 sec.
+Built-in quicksort took: 0.000191 sec.
+Array size: 2862108
+Sequential quicksort took: 0.637408 sec.
+Parallel quicksort took: 1.090166 sec.
+Built-in quicksort took: 0.631347 sec.
+Array size: 8304644
+Sequential quicksort took: 2.114744 sec.
+Parallel quicksort took: 1.828143 sec.
+Built-in quicksort took: 1.995273 sec.
+Array size: 8304644
+Sequential quicksort took: 2.013920 sec.
+Parallel quicksort took: 1.949785 sec.
+Built-in quicksort took: 1.985710 sec.
+Array size: 1000
+Sequential quicksort took: 0.000109 sec.
+Parallel quicksort took: 0.232648 sec.
+Built-in quicksort took: 0.000224 sec.
+Array size: 2862108
+Sequential quicksort took: 0.638421 sec.
+Parallel quicksort took: 1.108151 sec.
+Built-in quicksort took: 0.629763 sec.
+Array size: 9148146
+Sequential quicksort took: 2.202942 sec.
+Parallel quicksort took: 2.404484 sec.
+Built-in quicksort took: 2.209146 sec.
+Array size: 1000
+Sequential quicksort took: 0.000120 sec.
+Parallel quicksort took: 0.219858 sec.
+Built-in quicksort took: 0.000280 sec.
+Array size: 9148146
+Sequential quicksort took: 2.269680 sec.
+Parallel quicksort took: 2.170587 sec.
+Built-in quicksort took: 2.163455 sec.
+Array size: 9148146
+Sequential quicksort took: 2.282034 sec.
+Parallel quicksort took: 2.164418 sec.
+Built-in quicksort took: 2.176603 sec.
+Array size: 9370817
+Sequential quicksort took: 2.296136 sec.
+Parallel quicksort took: 2.116783 sec.
+Built-in quicksort took: 2.220888 sec.
+Array size: 2862108
+Sequential quicksort took: 0.632184 sec.
+Parallel quicksort took: 1.124580 sec.
+Built-in quicksort took: 0.622673 sec.
+Array size: 8304644
+Sequential quicksort took: 1.985324 sec.
+Parallel quicksort took: 1.946201 sec.
+Built-in quicksort took: 2.029748 sec.
+Array size: 10000000
+Sequential quicksort took: 2.524751 sec.
+Parallel quicksort took: 2.157554 sec.
+Built-in quicksort took: 2.426123 sec.
+* ELAPSED TIME FOR RUNNING THE PROGRAM
+Elapsed:    148.684521941 seconds
