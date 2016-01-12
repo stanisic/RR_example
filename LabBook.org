@@ -190,13 +190,23 @@ done
 
 #+begin_src sh
 shift $((OPTIND - 1))
-NUM=$1
-if [[ $# > 1 ]]; then
-    echo 'ERROR-more than one input parameter'
+RANGE1="-1"
+RANGE2="-1"
+if [[ $# == 1 ]]; then
+   RANGE1=$1
+fi
+if [[ $# == 2 ]]; then
+   RANGE1=$1
+   RANGE2=$2
+fi
+if [[ $# > 2 ]]; then
+    echo 'ERROR-more than two input parameters'
     help_script
     exit 2
 fi
 #+end_src
+
+#+RESULTS:
 
 ***** Verification
       Verifying that everything is commited (if this is not a simple
@@ -256,7 +266,7 @@ outputfile="$datafolder/$dataname${bkup}.org"
 
 #+begin_src sh
 # Starting to write output file and capturing all metadata
-title="Experiment for parallel quicksort of $NUM elements"
+title="Experiment for parallel quicksort"
 ./get_info.sh -t "$title" $outputfile
 #+end_src
 
@@ -284,13 +294,23 @@ else
 fi
 #+end_src
 
+***** Design of experiments
+
+      Generating randomized input parameters for the experiment
+      using R.
+
+#+begin_src sh
+rm -f input_values
+Rscript input_generator.R $RANGE1 $RANGE2
+#+end_src      
+
 ***** Running the experiment
       Preparing and capturing the line with which the experiment will
       be executed.
 
 #+begin_src sh
   # Prepare running options
-  running="$programname $NUM"
+  running="$programname"
 
   echo "* COMMAND LINE USED FOR RUNNING EXPERIMENT" >> $outputfile
   echo $running >> $outputfile
@@ -309,13 +329,15 @@ fi
   # In fact only the following line is actually executing the experiment
   # everything else is a wrapper, but it is very important that it is captured
   #############################################
-  eval $running 1> stdout.out 2> stderr.out
+  for NUM in $(cat input_values)
+  do
+    echo "Array size: $NUM" 1>> stdout.out
+    eval $running $NUM 1>> stdout.out 2>> stderr.out
+  done
   #############################################
 
   set -e
   time2=$(date +%s.%N)
-  echo "* ELAPSED TIME FOR RUNNING THE PROGRAM" >> $outputfile
-  echo "Elapsed:    $(echo "$time2 - $time1"|bc ) seconds" >> $outputfile
   echo "* STDERR OUTPUT" >> $outputfile
   cat stderr.out >> $outputfile
   if [ ! -s stdout.out ]; then
@@ -329,12 +351,15 @@ fi
   fi
 #+end_src
 
-    Cleanup.
+    End and cleanup.
 
 #+begin_src sh
   # Cleanup & End
+  echo "* ELAPSED TIME FOR RUNNING THE PROGRAM" >> $outputfile
+  echo "Elapsed:    $(echo "$time2 - $time1"|bc ) seconds" >> $outputfile
   rm -f stdout.out
   rm -f stderr.out
+  #rm -f input_values
   cd $basename
 #+end_src
 
@@ -608,6 +633,57 @@ echo "DONE: Single anti-commit!"
 #+begin_src sh
 rm -f $whole_list
 #+end_src
+
+**** TODO input_generator.R
+ :PROPERTIES:
+ :header-args:    :tangle input_generator.R
+ :END:
+
+     The output file containing the array size between the two input
+     arguments will later be used by run_xp. Note that the seed of the
+     random generator, the number of array sizes to test and the
+     number of repetition are constants of the R script, but they
+     could also be its input parameters.
+
+     Constants of the script.
+
+#+begin_src R
+set.seed(42)
+num=4
+rep=5
+# Disabling scientific notation in printing
+options(scipen=999)
+#+end_src
+
+     Reading the input arguments that represent the range.
+
+#+begin_src R
+args <- commandArgs(trailingOnly = TRUE)
+range1<-as.numeric(args[1])
+if (range1==-1)
+  range1<-1000000
+range2<-as.numeric(args[2])
+#+end_src
+
+     Sampling random values from the range. Adding repetitions and
+     again rearranging the vector.
+
+#+begin_src R
+if (range2==-1){
+  x <- rep.int(range1, rep)
+} else{
+  x <- c(range1, range2)
+  x <- append(x, sample(range1:range2, num, replace=F))
+  x <- rep.int(x,rep)
+  x <- x[sample.int(length(x))]
+}
+
+cat(x, file="input_values")
+#+end_src
+
+     Ideally, the order in which different algorithm implementations
+     are executed should be randomized as well, but at this point I
+     don't wish to change the source code file.
 
 *** src/
 **** parallelQuicksort.c
