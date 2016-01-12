@@ -747,10 +747,28 @@ cat(x, file="input_values")
 
 *** 2015-11-09
     - Started writing this small example project
-** TODO Git TAGs
+** Git TAGs
+   When the experimental campaign is over, Git branches can be deleted
+   as all the data has been merged into /data/ branch. Still, it could
+   be interesting to leave a track of that code version that can be
+   spotted easier than a certain commit, in order to easy a future
+   entry point for reproducing the experiments. For that, we put Git
+   tags on some important branches.
 
-   The list of Git-tags can be copied by hand or even better using Org-babel
+   Git tags can also be used as in the standard software development
+   to annotate an important source code version.
+
+   The list of Git-tags can be copied by hand or even better using
+   Org-babel.
+
 #+begin_src sh :results output :exports both
  git tag -n1
 #+end_src
+
+#+RESULTS:
+: stable0.9       This code work correctly
+: xp1             First experiments to test workflow
+: xp2             Experiments to try analysis on multiple data
+: xp3             Comparing 3 algorithm implemetation for a range of array size
+
 * Experiment results /
