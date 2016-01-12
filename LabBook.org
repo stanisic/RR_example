@@ -753,4 +753,112 @@ cat(x, file="input_values")
 #+begin_src sh :results output :exports both
  git tag -n1
 #+end_src
-* Experiment results /
+* Experiment results 
+** xp3
+*** git:
+#+begin_src sh :results output
+git log -1
+#+end_src
+
+#+RESULTS:
+: commit 21308e45f9ee048919ac1e7838c773455fff08d6
+: Author: Luka Stanisic <luka.stanisic@imag.fr>
+: Date:   Tue Jan 12 16:47:13 2016 +0100
+: 
+:     Easier if multiple runs are stored in a same file
+
+*** Running experiments and analysis through Org-mode
+    There is another possibility which is to run the experiments,
+    handle all git operations, analyze the results and take notes-all
+    directly within the laboratory notebook. By using different
+    session such approach can even allow running experiments on remote
+    machines.
+
+    In the current workflow, such approach is a bit tedious as the
+    LabBook itself is under Git revision. This slightly complicates
+    running the experiments (which requires that everything is
+    commited) as well as merging with /data/ branch (which will detect
+    changes in LabBook.org). Thus, to run it in such a way workflow
+    needs to be slightly modified, which is not an issues as the point
+    of having a lightweight and flexible workflow in the first place
+    is to be able to adapt it.
+
+**** Executing experiments
+
+     First we run the test to see if the script for running
+     experiments is working properly.
+
+#+begin_src sh :results output :session org-sh
+./run_xp.sh -t -c -v
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Cleaning the previously compiled code...
+Compiling...
+Executing program...
+Array size: 1000000
+Sequential quicksort took: 0.206875 sec.
+Parallel quicksort took: 0.959085 sec.
+Built-in quicksort took: 0.203203 sec.
+Array size: 1000000
+Sequential quicksort took: 0.209414 sec.
+Parallel quicksort took: 0.666978 sec.
+Built-in quicksort took: 0.202539 sec.
+Array size: 1000000
+Sequential quicksort took: 0.204689 sec.
+Parallel quicksort took: 0.557998 sec.
+Built-in quicksort took: 0.203058 sec.
+Array size: 1000000
+Sequential quicksort took: 0.203429 sec.
+Parallel quicksort took: 0.883960 sec.
+Built-in quicksort took: 0.207271 sec.
+Array size: 1000000
+Sequential quicksort took: 0.207608 sec.
+Parallel quicksort took: 0.823109 sec.
+Built-in quicksort took: 0.201284 sec.
+#+end_example
+
+
+     Seems fine, lets execute real experiments for a array size that varies from 1000 to 10000000 elements.
+
+#+begin_src sh :results output :session org-sh
+./run_xp.sh -c -v 1000 10000000
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Now you are in git branch: xp3
+ERROR-need to commit before doing experiment!
+On branch xp3
+Changes not staged for commit:
+..." to update what will be committed)
+..." to discard changes in working directory)
+
+	modified:   LabBook.org
+
+Untracked files:
+..." to include in what will be committed)
+
+	input_values
+
+no changes added to commit (use "git add" and/or "git commit -a")
+#+end_example
+
+    Oh I forgot this file have been modified, so I first need to
+    commit it and only then I can run the code. Thus, I will prepare
+    the next two blocks, save it, commit everything, then run the
+    experiments (but without saving LabBook.org so Git will not detect
+    changes in this file ;)), and only when it is finished I can
+    continue normally.
+
+#+begin_src sh :results output :session org-sh
+git commit -am "Running experiments through laboratory notebook"
+#+end_src
+
+#+begin_src sh :results output :session org-sh
+./run_xp.sh -c -v 1000 10000000
+#+end_src
+*** Notes:
+    
