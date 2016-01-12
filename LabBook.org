@@ -754,7 +754,7 @@ cat(x, file="input_values")
  git tag -n1
 #+end_src
 * Experiment results 
-** xp3
+** xp3						  :IMPORTANT:_LUKA:@WINNETOU:
 *** git:
 #+begin_src sh :results output
 git log -1
@@ -926,12 +926,71 @@ git commit -am "Running second experiments through laboratory notebook"
 #+end_src
 
 #+RESULTS:
-: [xp3 d079c36] Running experiments through laboratory notebook
-:  1 file changed, 109 insertions(+), 1 deletion(-)
+: [xp3 5fdf3dd] Running second experiments through laboratory notebook
+:  1 file changed, 76 insertions(+), 3 deletions(-)
 
 #+begin_src sh :results silent :session org-sh
-./run_xp.sh -c -v 1000 10000000
+./run_xp.sh -c -v 6000000 9000000
 #+end_src
 
+#+begin_src sh :results output :session org-sh
+git add data/xp3/QuicksortData1.org
+git commit -m "Adding second experiment data"
+#+end_src
+
+#+RESULTS:
+: 
+: [xp3 a85f986] Adding second experiment data
+:  1 file changed, 601 insertions(+)
+:  create mode 100644 data/xp3/QuicksortData1.org
+
+#+header: :var inputfile="data/xp3/QuicksortData1.org" outputfile="tmp_results2-b.csv"
+#+begin_src sh :results silent 
+sed -n '/* STDOUT/,/* ELAPSED TIME/{/* ELAPSED TIME/!p}' $inputfile > tmp
+tail -n +1 tmp > tmp2
+perl analysis/perl_extractor.pl < tmp2 > $outputfile
+rm -f tmp tmp2
+#+end_src
+
+#+begin_src R :results graphics :session *R* :dir . :exports both :file comparison2-b.png :width 700 :height 400
+# Reading the data
+df <- read.csv("tmp_results2-b.csv", header=TRUE)
+
+# Ploting the data using ggplot2
+library(ggplot2)
+ggplot(df, aes(x=Size, y=Time, color=factor(Type))) + 
+ geom_point() + stat_summary(fun.y = mean, geom="line", size=2) +
+ theme_bw() + scale_y_continuous(name="Time [s]") + 
+ scale_x_continuous(name="Array size") +
+ ggtitle("Comparing different quicksort implementations") +
+ guides(color=guide_legend(title="Implementation of\nthe algorithm"))
+#+end_src 
+
+#+RESULTS:
+[[file:comparison2-b.png]]
+
+
+    OK so this is definitely the interval in which the lines cross. We
+    can see how parallel implementation has the most variability,
+    while the other two are much more stable.
+
+**** Conclusion
+     It seems that on a personal laptop (winnetou) with the provided
+     implementation of the algorithms, sequential and built-in libc
+     are better than the parallel for the array size lower than 5
+     million elements, while parallel is better for arrays larger than
+     10 millions. For the cases in between there is too much
+     variability to conclude anything.
+
+     This is just an initial investigation and more accurate
+     measurements need to be done in future.
+
 *** Notes:
+    - Experiments on a local laptop that show that sequential and
+      built-in libc are better than the parallel for the array size
+      lower than 5 million elements, while parallel is better for
+      arrays larger than 10 millions. For the cases in between there
+      is too much variability to conclude anything
+    - The whole experimentation process and analysis were performed
+      directly within the laboratory notebook
     
