@@ -6,6 +6,7 @@
 #+TAGS: @WINNETOU(W) @PAWNEE(P)
 
 * Documentation
+
 ** Introduction
  A paramount asset of the methodology is the laboratory notebook
  (labbook), similar to the ones biologist, chemists and scientist from
@@ -57,7 +58,6 @@
       and git-links connecting the text to specific revisions of
       files. These hyperlinks point to crucial data and analysis
       reports that illustrate a newly discovered phenomenon.
-
 ** Additional literature and useful links
    This simple example project was hugely inspired by Arnaud Legrand's
    Master course on performance evaluation and experimental
@@ -67,6 +67,16 @@
    performing a much larger study concearning modeling and simulation
    of HPC applications running on top of dynamic task-based runtimes,
    go to the following [[http://starpu-simgrid.gforge.inria.fr/][webpage]].
+
+** Handling large data files
+   Sometimes outputs of the experiments can be very large (hundreds of
+   MB) and adding them to Git repository is a bit problematic. Git was
+   not made for handling large files and also pulling a large
+   repository of several GBs takes a lot of time. Thus, it is advised
+   to use supplementary tools that help dealing with large files
+   inside Git, such as [[https://git-lfs.github.com/][Git-LFS]] and [[https://git-annex.branchable.com/][git-annex]]. Additionally, Git-LFS is
+   already integrated into GitHub and GitLab, so using it shouldn't be
+   that hard.
    
 ** Experimental workflow
    1) Create a new branch for doing experiments
@@ -78,7 +88,7 @@
    7) Commit/push all files in the experimental branch
    8) Merge this new branch with the remote "data" branch
 
-** TODO Code and its organization
+** Code and its organization
 *** scripts:
     Scripts for running the experiments and collecting the data are
     written directly in this file. Later they should be extracted from
@@ -359,7 +369,7 @@ Rscript input_generator.R $RANGE1 $RANGE2
   echo "Elapsed:    $(echo "$time2 - $time1"|bc ) seconds" >> $outputfile
   rm -f stdout.out
   rm -f stderr.out
-  #rm -f input_values
+  rm -f input_values
   cd $basename
 #+end_src
 
@@ -634,7 +644,7 @@ echo "DONE: Single anti-commit!"
 rm -f $whole_list
 #+end_src
 
-**** TODO input_generator.R
+**** input_generator.R
  :PROPERTIES:
  :header-args:    :tangle input_generator.R
  :END:
@@ -711,7 +721,10 @@ cat(x, file="input_values")
 **** Makefile
      - Typical Makefile (also taken from Arnaud Legrand) which compiles C code
 *** analysis/
-
+**** Comparison.org
+     Org-mode analysis file using shell and perl to extract data from
+     the output files. Later using R to analyze the data and generate
+     plots using ggplot2.
 ** Organization of Git
 *** remote/origin/master branch contains
     - All the source code, scripts for running experiments, analysis code and this labbook with only "Documentation" part
@@ -722,7 +735,6 @@ cat(x, file="input_values")
 *** remote/origin/data branch contains
     - Everything that is already in /master/ branch
     - All the data gathered from previous experimental campaigns and some analysis which compares different experimental sets of results
-
 ** Examples for running scripts
    For running test experiments, just to validate that the script is
    working as planned (without caring about the actual experimental
